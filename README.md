@@ -30,7 +30,7 @@ This project showcases an interactive drum kit system built with an ESP32 microc
 
 1. **Clone the Repository**:
     ```bash
-    git clone https://github.com/JakobSever/ESP32-Drum-triggered-led-strip.git
+    git clone git@github.com:JakobSever/ESP32-Drum-triggered-led-strip.git
     cd ESP32-Drum-triggered-led-strip
     ```
 
