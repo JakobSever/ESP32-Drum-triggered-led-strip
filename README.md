@@ -63,10 +63,6 @@ This project showcases an interactive drum kit system built with an ESP32 microc
 
 Feel free to customize the code and hardware setup to better suit your needs. You can add more sensors, change the LED patterns, or enhance the RemoteXY interface for additional controls.
 
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
