@@ -339,4 +339,3 @@ void loop() {
   // Update the LEDs
   FastLED.show();
 }
- 		// Debounce interval in m 		// Debounce interval in millisecondslliseconds
