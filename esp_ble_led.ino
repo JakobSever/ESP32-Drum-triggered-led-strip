@@ -12,14 +12,21 @@
 struct Trail {
   int position;  // Current position of the trail
   int speed;     // Speed of the trail
-  CRGB color1;	 // Effect color 1
-  CRGB color2; 	 // Effect color 2
+  CRGB color1;
+  CRGB color2;
 };
 
 CRGB leds[NUM_LEDS];
 Trail trails[MAX_TRAILS];  // Store information about each trail
 int numActiveTrails = 0;   // Number of active trails
 int nextTrailIndex = 0;    // Index to add the next trail
+
+unsigned int transitionCurrentStep = 1;
+const int totalTransitionSteps = 100;
+bool direction = true;
+
+unsigned long checkTime;
+unsigned long elapsedTime;
 
 #define REMOTEXY_MODE__ESP32CORE_BLE
 #include <BLEDevice.h>
@@ -55,7 +62,6 @@ struct {
 } RemoteXY;
 #pragma pack(pop)
 
-
 void setup() {
   RemoteXY_Init();
 
@@ -76,8 +82,11 @@ void setup() {
     trails[i].position = -1; // -1 indicates inactive trail
   }
 
+  // Set the starting colors for the effects
   RemoteXY.rgb_01_r = 255;
   RemoteXY.rgb_02_b = 255;
+
+  checkTime = millis();
 }
 
 void loop() {
@@ -96,7 +105,7 @@ void loop() {
   RemoteXY.level_01 = piezoValue * 100 / 4095;
 
   // Get threshold value
-  const int threshold = RemoteXY.slider_01 * 4095 / 100;
+  int threshold = RemoteXY.slider_01 * 4095 / 100;
 
   // Get color values from app
   CRGB color1 = CRGB(RemoteXY.rgb_01_r, RemoteXY.rgb_01_g, RemoteXY.rgb_01_b);
@@ -106,14 +115,12 @@ void loop() {
   switch (RemoteXY.select_01) {
     case 0:
       if (piezoValue > threshold) {
-        Serial.print(threshold);
-        Serial.print(" - ");
-        Serial.println(piezoValue);
-        shootTrail(color1, color2);
+        shootTrail(&color1, &color2);
       }
       shootTrailUpdate();
       break;
     case 1:
+      transitionStrip(&color1, &color2, &threshold);
       break;
     case 2:
       break;
@@ -124,12 +131,12 @@ void loop() {
   FastLED.show();
 }
 
-void shootTrail(CRGB color1, CRGB color2) {
+void shootTrail(CRGB *color1, CRGB *color2) {
   if (numActiveTrails < MAX_TRAILS) {
     trails[nextTrailIndex].position = 0;
     trails[nextTrailIndex].speed = 1;
-    trails[nextTrailIndex].color1 = color1;
-    trails[nextTrailIndex].color2 = color2;
+    trails[nextTrailIndex].color1 = *color1;
+    trails[nextTrailIndex].color2 = *color2;
     numActiveTrails++;
 
     // Increment the next trail index in a circular manner
@@ -156,6 +163,30 @@ void shootTrailUpdate() {
       trails[i].position = -1;
       numActiveTrails--;
     }
+  }
+}
+
+void transitionStrip(CRGB *color1, CRGB *color2, int *threshold) {
+  elapsedTime = millis() - checkTime;
+
+  if(elapsedTime > (*threshold / 4)) {
+    checkTime = millis();
+
+    if((transitionCurrentStep > totalTransitionSteps - 1) || transitionCurrentStep < 1) {
+      direction = !direction;
+    }
+
+    if(direction) {
+      transitionCurrentStep += 1;
+    } else {
+      transitionCurrentStep -= 1;
+    }
+
+    float progress = (transitionCurrentStep * 255) / totalTransitionSteps;
+    CRGB color = blend(*color1, *color2, progress);
+
+    // Set all LEDs to the current color
+    fill_solid(leds, NUM_LEDS, color);
   }
 }
 
