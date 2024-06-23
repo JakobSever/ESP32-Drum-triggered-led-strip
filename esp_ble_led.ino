@@ -313,8 +313,8 @@ void loop() {
         break;
       case 3:
         switchBetweenColors(&color1, &color2);
-      break;
-	    case 4:
+      	break;
+	  case 4:
         blinkStrip(&color1, &color2, &effectValue);
         break;
     }
@@ -339,4 +339,4 @@ void loop() {
   // Update the LEDs
   FastLED.show();
 }
-
+ 		// Debounce interval in m 		// Debounce interval in millisecondslliseconds
